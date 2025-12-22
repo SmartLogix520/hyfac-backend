@@ -1,0 +1,125 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ====================================
+// MODÈLE : Produit
+// ====================================
+model Product {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String // Nom du produit (ex: "HYFAC Mousse nettoyante")
+  slug        String  @unique // URL-friendly (ex: "hyfac-mousse-nettoyante")
+  description String // Description détaillée
+  shortDesc   String? // Description courte pour liste
+
+  // Catégorisation
+  category String // "Nettoyant", "Soin", "Crème", "Gel", etc.
+  ranges   String[] // ["Parapharmacie", "Pharmacie", "Cosmétique"]
+  skinType String[] // ["grasse", "mixte", "sensible", "acnéique"]
+
+  // Informations produit
+  volume String? // "150ml", "40ml", etc.
+  price  Float? // Prix en euros
+
+  // Ingrédients et composition
+  activeIngredients String[] // ["Acide salicylique", "Zinc", etc.]
+  ingredients       String? // Liste complète des ingrédients
+
+  // Médias
+  imageUrl String // URL principale de l'image
+  images   String[] // Images supplémentaires
+
+  // Utilisation
+  usageInstructions String? // Comment utiliser le produit
+  benefits          String[] // Bénéfices clés
+
+  // Disponibilité
+  inStock  Boolean @default(true)
+  isActive Boolean @default(true)
+
+  // Relations
+  storeIds String[] @db.ObjectId // Points de vente ayant ce produit
+  stores   Store[]  @relation(fields: [storeIds], references: [id])
+
+  // Métadonnées
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("products")
+}
+
+// ====================================
+// MODÈLE : Point de Vente
+// ====================================
+model Store {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String // Nom de la pharmacie/point de vente
+  slug String @unique // URL-friendly
+
+  // Adresse complète
+  address    String // Adresse rue
+  city       String // Ville
+  postalCode String // Code postal
+  country    String @default("France")
+
+  // Coordonnées GPS (pour la carte)
+  lat Float // Latitude
+  lng Float // Longitude
+
+  // Gammes disponibles dans ce point de vente
+  ranges String[] // ["Parapharmacie", "Pharmacie", "Cosmétique"]
+
+  // Informations de contact
+  phone         String?
+  email         String?
+  website       String?
+  googleMapsUrl String?
+
+  // Horaires (optionnel, structure JSON)
+  openingHours Json? // Ex: {"lundi": "9h-19h", "mardi": "9h-19h", ...}
+
+  // Services disponibles
+  services String[] // ["Conseil pharmaceutique", "Livraison", "Click & Collect"]
+
+  // Statut
+  isActive   Boolean @default(true)
+  isFeatured Boolean @default(false) // Points de vente mis en avant
+
+  // Relations
+  productIds String[]  @db.ObjectId
+  products   Product[] @relation(fields: [productIds], references: [id])
+
+  // Métadonnées
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Index pour recherche géospatiale et par code postal
+  @@index([postalCode])
+  @@index([city])
+  @@map("stores")
+}
+
+// ====================================
+// MODÈLE : Catégorie de Produits
+// ====================================
+model Category {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String  @unique // "Nettoyants", "Soins", "Crèmes"
+  slug        String  @unique
+  description String?
+  imageUrl    String?
+  order       Int     @default(0) // Pour l'ordre d'affichage
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categories")
+}
