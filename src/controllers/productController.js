@@ -15,6 +15,9 @@ export class ProductController {
                 skinType: req.query.skinType,
                 inStock: req.query.inStock,
                 search: req.query.search,
+                minPrice: req.query.minPrice,
+                maxPrice: req.query.maxPrice,
+                sortBy: req.query.sortBy,
                 page: req.query.page || 1,
                 limit: req.query.limit || 20
             };

@@ -23,7 +23,7 @@ export class StoreService {
                 postalCode: { startsWith: postalCode }
             }),
             ...(city && {
-                city: { contains: city, mode: 'insensitive' }
+                city: { equals: city, mode: 'insensitive' }
             }),
             ...(range && {
                 ranges: { has: range }

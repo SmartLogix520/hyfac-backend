@@ -5,6 +5,7 @@ export class ProductService {
     /**
      * Récupérer tous les produits avec filtres
      */
+// src/services/productService.js
     static async getAllProducts(filters = {}) {
         const {
             category,
@@ -12,6 +13,9 @@ export class ProductService {
             skinType,
             inStock,
             search,
+            minPrice,
+            maxPrice,
+            sortBy = 'default',
             page = 1,
             limit = 20
         } = filters;
@@ -29,15 +33,48 @@ export class ProductService {
                     { name: { contains: search, mode: 'insensitive' } },
                     { description: { contains: search, mode: 'insensitive' } }
                 ]
+            }),
+            // Filtres de prix
+            ...(minPrice && { price: { gte: parseFloat(minPrice) } }),
+            ...(maxPrice && { price: { lte: parseFloat(maxPrice) } }),
+            // Si les deux sont présents
+            ...(minPrice && maxPrice && {
+                price: {
+                    gte: parseFloat(minPrice),
+                    lte: parseFloat(maxPrice)
+                }
             })
         };
+
+        // Gestion du tri
+        let orderBy = { createdAt: 'desc' }; // Par défaut
+
+        switch (sortBy) {
+            case 'price-asc':
+                orderBy = { price: 'asc' };
+                break;
+            case 'price-desc':
+                orderBy = { price: 'desc' };
+                break;
+            case 'name-asc':
+                orderBy = { name: 'asc' };
+                break;
+            case 'name-desc':
+                orderBy = { name: 'desc' };
+                break;
+            case 'newest':
+                orderBy = { createdAt: 'desc' };
+                break;
+            default:
+                orderBy = { createdAt: 'desc' };
+        }
 
         const [products, total] = await Promise.all([
             prisma.product.findMany({
                 where,
                 skip,
                 take: parseInt(limit),
-                orderBy: { createdAt: 'desc' },
+                orderBy,
                 include: {
                     stores: {
                         select: {
