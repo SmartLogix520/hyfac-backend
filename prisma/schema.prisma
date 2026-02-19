@@ -40,6 +40,22 @@ model Product {
   usageInstructions String? // Comment utiliser le produit
   benefits          String[] // Bénéfices clés
 
+      // Infos enrichies
+  subtitle      String?
+  idealFor      String?
+  texture       String?
+  whenToUse     String?
+  whereToUse    String?
+  result        String?
+  beneficesList String[]
+  benefits_pills String[]
+
+  // Sections page détail
+  sectionProblemeAction   Json?
+  sectionAcneBoutons      Json?
+  sectionResultatsProuves Json?
+  sectionFAQ              Json?
+
   // Disponibilité
   inStock  Boolean @default(true)
   isActive Boolean @default(true)
