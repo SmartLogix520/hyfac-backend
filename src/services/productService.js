@@ -173,28 +173,36 @@ export class ProductService {
     /**
      * Mettre à jour un produit
      */
-    static async updateProduct(id, productData) {
-        const { storeIds, ...data } = productData;
+static async updateProduct(id, productData) {
+    const { 
+        storeIds,
+        id: _id,
+        slug,
+        createdAt,
+        updatedAt,
+        stores,
+        ...data 
+    } = productData
 
-        const updateData = {
-            ...data,
-            ...(storeIds && {
-                stores: {
-                    set: storeIds.map(id => ({ id }))
-                }
-            })
-        };
-
-        const product = await prisma.product.update({
-            where: { id },
-            data: updateData,
-            include: {
-                stores: true
+    const updateData = {
+        ...data,
+        ...(storeIds && {
+            stores: {
+                set: storeIds.map(id => ({ id }))
             }
-        });
-
-        return product;
+        })
     }
+
+    const product = await prisma.product.update({
+        where: { id },
+        data: updateData,
+        include: {
+            stores: true
+        }
+    })
+
+    return product
+}
 
     /**
      * Supprimer un produit
